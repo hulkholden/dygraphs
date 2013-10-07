@@ -45,8 +45,17 @@ grid.prototype.willDrawChart = function(e) {
   var layout = g.layout_;
   var area = e.dygraph.plotter_.area;
 
-  function halfUp(x)  { return Math.round(x) + 0.5; }
-  function halfDown(y){ return Math.round(y) - 0.5; }
+  // On HiDPI displays, all coordinates and dimensions are scaled up by
+  // the canvas scale factor.
+  // For a 2x scale factor, this means that all lines will be rendered with even
+  // width, meaning they are rendered most crisply at exact integer coordinates.
+  // For fractional scale factors, there's very little we can do to make
+  // lines appear crisply without changing the width of the line.
+  // For a conventional scale factor of 1.0, we render odd lines at 0.5 offset.
+  var scale = g.hidden_.width / g.width_;
+  var pixelCenterOffset = scale == 1.0 ? 0.5 : 0.0;
+  function halfUp(x)  { return Math.round(x) + pixelCenterOffset; }
+  function halfDown(y){ return Math.round(y) - pixelCenterOffset; }
 
   var x, y, i, ticks;
   if (g.getOptionForAxis('drawGrid', 'y')) {
